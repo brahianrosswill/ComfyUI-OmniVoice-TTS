@@ -1,0 +1,770 @@
+{
+  "id": "c238ce19-d517-44ba-b91d-7b1ff93a715d",
+  "revision": 0,
+  "last_node_id": 24,
+  "last_link_id": 28,
+  "nodes": [
+    {
+      "id": 11,
+      "type": "OmniVoiceWhisperLoader",
+      "pos": [
+        1523.9627223937912,
+        3219.202238812799
+      ],
+      "size": [
+        280.4712890625,
+        106
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "whisper_model",
+          "type": "WHISPER_ASR",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "OmniVoiceWhisperLoader"
+      },
+      "widgets_values": [
+        "openai_whisper-large-v3-turbo",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "LoadAudio",
+      "pos": [
+        1522.4171266570067,
+        3025.949354459317
+      ],
+      "size": [
+        282.798828125,
+        136
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "sample-5.mp3",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 3,
+      "type": "OmniVoiceVoiceCloneTTS",
+      "pos": [
+        1058.438164883165,
+        3032.4502739263735
+      ],
+      "size": [
+        400,
+        402
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "ref_audio",
+          "type": "AUDIO",
+          "link": 16
+        },
+        {
+          "name": "whisper_model",
+          "shape": 7,
+          "type": "WHISPER_ASR",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            18
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "OmniVoiceVoiceCloneTTS"
+      },
+      "widgets_values": [
+        "OmniVoice",
+        "Hello! This is a test of voice cloning with OmniVoice.",
+        "",
+        32,
+        1,
+        0,
+        "auto",
+        "auto",
+        "auto",
+        42,
+        "fixed",
+        false
+      ]
+    },
+    {
+      "id": 15,
+      "type": "PreviewAudio",
+      "pos": [
+        1062.3240359393199,
+        3482.5067190277296
+      ],
+      "size": [
+        396.8957036141585,
+        111.40234528285964
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 18
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "PreviewAudio"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 13,
+      "type": "LoadAudio",
+      "pos": [
+        702.6378047132948,
+        3020.197519722917
+      ],
+      "size": [
+        282.798828125,
+        136
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "sample-4.mp3",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 14,
+      "type": "OmniVoiceWhisperLoader",
+      "pos": [
+        708.5908975961436,
+        3215.962629047233
+      ],
+      "size": [
+        280.4712890625,
+        106
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "whisper_model",
+          "type": "WHISPER_ASR",
+          "links": [
+            17
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "OmniVoiceWhisperLoader"
+      },
+      "widgets_values": [
+        "openai_whisper-large-v3-turbo",
+        "auto",
+        "fp16"
+      ]
+    },
+    {
+      "id": 12,
+      "type": "OmniVoiceLongformTTS",
+      "pos": [
+        1880.5842041636001,
+        3023.8995717409093
+      ],
+      "size": [
+        400,
+        426
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "ref_audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 14
+        },
+        {
+          "name": "whisper_model",
+          "shape": 7,
+          "type": "WHISPER_ASR",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "OmniVoiceLongformTTS"
+      },
+      "widgets_values": [
+        "OmniVoice",
+        "Hello! This is a test of OmniVoice text to speech synthesis.",
+        "",
+        32,
+        1,
+        0,
+        "auto",
+        "auto",
+        "auto",
+        42,
+        "fixed",
+        100,
+        false
+      ]
+    },
+    {
+      "id": 2,
+      "type": "PreviewAudio",
+      "pos": [
+        1887.077360779287,
+        3497.1814703775317
+      ],
+      "size": [
+        396.89570361415826,
+        115.41639743113274
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 15
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "PreviewAudio"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 4,
+      "type": "OmniVoiceVoiceDesignTTS",
+      "pos": [
+        843.2977721911776,
+        3750.9078605356754
+      ],
+      "size": [
+        468.0063838942615,
+        512.2073679222249
+      ],
+      "flags": {
+        "collapsed": false
+      },
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            19
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "OmniVoiceVoiceDesignTTS"
+      },
+      "widgets_values": [
+        "OmniVoice-bf16",
+        "Hello! This is a test of voice design with OmniVoice.",
+        "female, low pitch, british accent",
+        32,
+        1,
+        0,
+        "auto",
+        "auto",
+        "auto",
+        85,
+        "fixed",
+        false
+      ]
+    },
+    {
+      "id": 16,
+      "type": "PreviewAudio",
+      "pos": [
+        851.373569452693,
+        4318.284655751191
+      ],
+      "size": [
+        453.3684869941294,
+        88
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 19
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "PreviewAudio"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 20,
+      "type": "LoadAudio",
+      "pos": [
+        1537.4075361516404,
+        4125.507187439001
+      ],
+      "size": [
+        282.798828125,
+        136
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            28
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "sample-4.mp3",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 21,
+      "type": "PreviewAudio",
+      "pos": [
+        1546.077555312022,
+        4337.430908115799
+      ],
+      "size": [
+        719.9677042397566,
+        88
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 27
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "PreviewAudio"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 24,
+      "type": "OmniVoiceMultiSpeakerTTS",
+      "pos": [
+        1866.9301171660356,
+        3742.2082470109394
+      ],
+      "size": [
+        387.228120294144,
+        527.8596769353753
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "speaker_1_audio",
+          "name": "num_speakers.speaker_1_audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 25
+        },
+        {
+          "label": "speaker_2_audio",
+          "name": "num_speakers.speaker_2_audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 26
+        },
+        {
+          "label": "speaker_3_audio",
+          "name": "num_speakers.speaker_3_audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 28
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            27
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "OmniVoiceMultiSpeakerTTS"
+      },
+      "widgets_values": [
+        "OmniVoice",
+        "[Speaker_1]: Hello, I'm speaker one.\n[Speaker_2]: And I'm speaker two!",
+        32,
+        1,
+        0.3,
+        "auto",
+        "auto",
+        "auto",
+        1641336355,
+        "randomize",
+        false,
+        "3",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 18,
+      "type": "LoadAudio",
+      "pos": [
+        1532.4339386604688,
+        3738.94884776021
+      ],
+      "size": [
+        282.798828125,
+        136
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            25
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "sample-4.mp3",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 19,
+      "type": "LoadAudio",
+      "pos": [
+        1539.5522712459858,
+        3935.664049146604
+      ],
+      "size": [
+        282.798828125,
+        136
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            26
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.17.0",
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "sample-5.mp3",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 22,
+      "type": "MarkdownNote",
+      "pos": [
+        -18.642944585202013,
+        2977.372637027331
+      ],
+      "size": [
+        663.2543654682743,
+        1276.115542576766
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "-",
+      "properties": {},
+      "widgets_values": [
+        "# OmniVoice TTS\n\n  ## Auto-Download\n\n  **Models auto-download on first run** - no manual setup needed!\n\n  | Model | VRAM | Size |\n  |-------|------|------|\n  | OmniVoice (fp32) | ~8-12GB | ~4GB |\n  | OmniVoice-bf16 | ~4-6GB | ~2GB |\n  ---\n\n  ## Manual Download\n\n  | File | Size | Link |\n  |------|------|------|\n  | OmniVoice (Full fp32) | ~4GB | [Download](https://huggingface.co/k2-fsa/OmniVoice) |\n  | OmniVoice-bf16 | ~2GB | [Download](https://huggingface.co/drbaph/OmniVoice-bf16) |\n\n\n```\n  📂 ComfyUI/\n  ├── 📂 models/\n  │   ├── 📂 omnivoice/\n  │   │      ├── 📂 OmniVoice/\n  │   │      │      ├── config.json\n  │   │      │      └── model.safetensors\n  │   │      └── 📂 OmniVoice-bf16/\n  │   │             ├── config.json\n  │   │             └── model.safetensors\n  │   └── 📂 audio_encoders/\n  │          ├── 📂 openai_whisper-large-v3-turbo/\n  │          │      ├── config.json\n  │          │      └── model.safetensors\n  │          └── 📂 openai_whisper-medium/\n  │                 ├── config.json\n  │                 └── model.safetensors\n```\n\n  ---\n\n  ## Whisper ASR models (for auto-transcription)\n\n  | Model | VRAM | Link |\n  |-------|------|------|\n  | whisper-large-v3-turbo | ~1.5GB | [Download](https://huggingface.co/openai/whisper-large-v3-turbo) |\n  | whisper-large-v3 | ~3GB | [Download](https://huggingface.co/openai/whisper-large-v3) |\n  | whisper-medium | ~1.5GB | [Download](https://huggingface.co/openai/whisper-medium) |\n  | whisper-small | ~0.5GB | [Download](https://huggingface.co/openai/whisper-small) |\n  | whisper-tiny | ~0.4GB | [Download](https://huggingface.co/openai/whisper-tiny) |\n\n  ---\n\n  ## Non-verbal expression tags:\n\n  `[laughter]` `[sigh]` `[sniff]` `[question-en]` `[question-ah]` `[question-oh]` `[question-ei]` `[question-yi]` `[surprise-ah]` `[surprise-oh]` `[surprise-wa]` `[surprise-yo]` `[dissatisfaction-hnn]` `[confirmation-en]`\n\n  ---\n\n  ## Voice design attributes (comma-separated):\n\n  | Category | Options |\n  |----------|---------|\n  | Gender | `male`, `female` |\n  | Age | `child`, `young`, `middle-aged`, `elderly` |\n  | Pitch | `very low pitch`, `low pitch`, `medium pitch`, `high pitch`, `very high pitch` |\n  | Style | `whisper` |\n  | English Accents | `american accent`, `british accent`, `australian accent`, `canadian accent`, `indian accent`, `irish accent`, `scottish accent`, `south african accent` |\n  | Chinese Dialects | `四川话`, `陕西话`, `广东话`, `东北话`, `山东话`, `河南话`, `上海话`, `闽南话`, `客家话` |\n\n  **Example:** `female, young, high pitch, british accent, whisper`\n\n  ---\n\n  ## Multi-speaker dialogue format:\n\n  [Speaker_1]: Hello, I'm speaker one.\n  [Speaker_2]: And I'm speaker two!\n  [Speaker_1]: Nice to meet you!\n\n  ---\n\n  ## Links\n\n  - Original [OmniVoice](https://huggingface.co/k2-fsa/OmniVoice)\n  - Models [OmniVoice](https://huggingface.co/k2-fsa/OmniVoice) / [OmniVoice-bf16](https://huggingface.co/drbaph/OmniVoice-bf16)\n  - Paper [arXiv:2604.00688](https://arxiv.org/abs/2604.00688)\n  - Issues [Report Bug](https://github.com/saganaki22/ComfyUI-OmniVoice-TTS/issues)"
+      ],
+      "color": "#c09430",
+      "bgcolor": "rgba(24,24,27,.9)"
+    }
+  ],
+  "links": [
+    [
+      13,
+      11,
+      0,
+      12,
+      1,
+      "WHISPER_ASR"
+    ],
+    [
+      14,
+      5,
+      0,
+      12,
+      0,
+      "AUDIO"
+    ],
+    [
+      15,
+      12,
+      0,
+      2,
+      0,
+      "AUDIO"
+    ],
+    [
+      16,
+      13,
+      0,
+      3,
+      0,
+      "AUDIO"
+    ],
+    [
+      17,
+      14,
+      0,
+      3,
+      1,
+      "WHISPER_ASR"
+    ],
+    [
+      18,
+      3,
+      0,
+      15,
+      0,
+      "AUDIO"
+    ],
+    [
+      19,
+      4,
+      0,
+      16,
+      0,
+      "AUDIO"
+    ],
+    [
+      25,
+      18,
+      0,
+      24,
+      0,
+      "AUDIO"
+    ],
+    [
+      26,
+      19,
+      0,
+      24,
+      1,
+      "AUDIO"
+    ],
+    [
+      27,
+      24,
+      0,
+      21,
+      0,
+      "AUDIO"
+    ],
+    [
+      28,
+      20,
+      0,
+      24,
+      2,
+      "AUDIO"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Voice Clone",
+      "bounding": [
+        692.6378047132948,
+        2946.5975197229172,
+        779.5203656683516,
+        683.7578704169869
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "Longform Clone",
+      "bounding": [
+        1512.4171266570067,
+        2950.2995717409094,
+        781.5559377364386,
+        672.2982960677551
+      ],
+      "color": "#88A",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "Voice Design",
+      "bounding": [
+        833.2977721911776,
+        3677.3078605356754,
+        488.0063838942616,
+        738.9767952155177
+      ],
+      "color": "#8A8",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "Multi-Speaker",
+      "bounding": [
+        1522.4339386604688,
+        3665.34884776021,
+        753.61132089131,
+        770.08206035559
+      ],
+      "color": "#391466",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.5989500000000177,
+      "offset": [
+        118.64294458520202,
+        -2877.372637027331
+      ]
+    },
+    "frontendVersion": "1.42.8",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
