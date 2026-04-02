@@ -25,59 +25,29 @@
 - **VRAM Efficient** — Automatic CPU offload, VBAR/aimdo integration
 ## Installation
 
-> ⚠️ **BEFORE INSTALLING: Note your PyTorch version!**
->
-> Run this command and save the output - you'll need it if anything goes wrong:
-> ```bash
-> python -c "import torch; print(f'torch={torch.__version__} cuda={torch.version.cuda}')"
-> ```
-> Example output: `torch=2.10.0+cu128 cuda=12.8`
->
-> If installation breaks your PyTorch, restore it with one of:
-> ```bash
-> # Using pip:
-> pip install torch torchaudio --index-url https://download.pytorch.org/whl/<your_cuda>
->
-> # Using uv:
-> uv pip install torch torchaudio --index-url https://download.pytorch.org/whl/<your_cuda>
-> ```
-> Replace `<your_cuda>` with your version (e.g., `cu128`, `cu124`, `cu121`, `cu118`)
-
 ### Method 1: ComfyUI Manager (Recommended)
 Search for "OmniVoice" in ComfyUI Manager and click Install.
+
 ### Method 2: Manual Install
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/saganaki22/ComfyUI-OmniVoice-TTS.git
 cd ComfyUI-OmniVoice-TTS
-pip install -r requirements.txt
-```
-### Method 3: Using uv
-```bash
-cd ComfyUI/custom_nodes
-git clone https://github.com/saganaki22/ComfyUI-OmniVoice-TTS.git
-cd ComfyUI-OmniVoice-TTS
-uv pip install -r requirements.txt
+python install.py
 ```
 
-### ⚠️ PyTorch CUDA Downgrade Warning
-The `omnivoice` pip package may **downgrade PyTorch to a CPU-only version** during installation, removing CUDA support. This breaks GPU acceleration in ComfyUI.
+### Why `--no-deps`?
+The `omnivoice` pip package specifies `torch==2.8.*` as a dependency, which can downgrade your PyTorch to a CPU-only version and break ComfyUI's GPU acceleration. We work around this by installing `omnivoice` with `--no-deps` in `install.py`, then separately installing only the missing dependencies that ComfyUI doesn't already provide.
 
-**What this node does automatically:**
-If `omnivoice` is missing on first load, the node attempts to:
-1. Install `omnivoice` via pip
-2. Re-install your original CUDA PyTorch version to restore GPU support
-
-**To fix manually if needed:**
+### If PyTorch Gets Broken
+If another package accidentally downgrades your PyTorch, restore it with:
 ```bash
-# Check your CUDA version (e.g., cu118, cu121, cu128)
+# Check your CUDA version first:
 python -c "import torch; print(torch.version.cuda)"
 
-# Re-install PyTorch with your CUDA version (example for cu128):
-pip install torch==2.9.0+cu128 torchaudio==2.9.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+# Restore PyTorch (replace cu128 with your version):
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
-
-**Recommendation:** After installing this node, **restart ComfyUI** to ensure CUDA PyTorch is restored properly.
 
 ## Nodes
 ### 1. OmniVoice Longform TTS

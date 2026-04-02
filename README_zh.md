@@ -23,24 +23,6 @@
 
 ## 安装
 
-> ⚠️ **安装前：请记录您的PyTorch版本！**
->
-> 运行此命令并保存输出 - 如果出现问题您会需要它：
-> ```bash
-> python -c "import torch; print(f'torch={torch.__version__} cuda={torch.version.cuda}')"
-> ```
-> 示例输出：`torch=2.10.0+cu128 cuda=12.8`
->
-> 如果安装破坏了您的PyTorch，使用以下命令恢复：
-> ```bash
-> # 使用pip：
-> pip install torch torchaudio --index-url https://download.pytorch.org/whl/<您的CUDA版本>
->
-> # 使用uv：
-> uv pip install torch torchaudio --index-url https://download.pytorch.org/whl/<您的CUDA版本>
-> ```
-> 将`<您的CUDA版本>`替换为您的版本（如`cu128`、`cu124`、`cu121`、`cu118`）
-
 ### 方法1：ComfyUI Manager（推荐）
 在ComfyUI Manager中搜索"OmniVoice"并点击安装。
 
@@ -49,35 +31,21 @@
 cd ComfyUI/custom_nodes
 git clone https://github.com/saganaki22/ComfyUI-OmniVoice-TTS.git
 cd ComfyUI-OmniVoice-TTS
-pip install -r requirements.txt
+python install.py
 ```
 
-### 方法3：使用uv
+### 为什么使用 `--no-deps`？
+`omnivoice` pip包指定了 `torch==2.8.*` 作为依赖，这可能会将您的PyTorch降级为CPU版本，导致ComfyUI无法使用GPU加速。我们在 `install.py` 中通过 `--no-deps` 安装 `omnivoice` 来绕过这个问题，然后单独安装ComfyUI未提供的缺失依赖。
+
+### 如果PyTorch被破坏
+如果其他包意外降级了您的PyTorch，使用以下命令恢复：
 ```bash
-cd ComfyUI/custom_nodes
-git clone https://github.com/saganaki22/ComfyUI-OmniVoice-TTS.git
-cd ComfyUI-OmniVoice-TTS
-uv pip install -r requirements.txt
-```
-
-### ⚠️ PyTorch CUDA降级警告
-`omnivoice` pip包可能在安装时**将PyTorch降级为CPU版本**，导致ComfyUI无法使用GPU。
-
-**此节点的自动处理：**
-首次加载时如果缺少 `omnivoice`，节点会尝试：
-1. 通过pip安装 `omnivoice`
-2. 重新安装原来的CUDA版PyTorch以恢复GPU支持
-
-**手动修复：**
-```bash
-# 检查CUDA版本（如cu118, cu121, cu128）
+# 先检查您的CUDA版本：
 python -c "import torch; print(torch.version.cuda)"
 
-# 重新安装对应CUDA版本的PyTorch（cu128示例）：
-pip install torch==2.9.0+cu128 torchaudio==2.9.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+# 恢复PyTorch（将cu128替换为您的版本）：
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
-
-**建议：** 安装此节点后，**重启ComfyUI**以确保CUDA PyTorch正确恢复。
 
 ## 节点
 
