@@ -1,7 +1,7 @@
 [project]
 name = "ComfyUI-omnivoice-tts"
 description = "ComfyUI custom nodes for OmniVoice TTS | voice clone, multi-speaker, voice design, text-to-speech"
-version = "0.1.1"
+version = "0.1.2"
 license = {file = "LICENSE"}
 # BEST PRACTICE: Only list packages that:
 # 1. ComfyUI does NOT provide

@@ -298,21 +298,23 @@ def load_model(
     dtype = resolve_precision(precision, device_str)
 
     # Resolve the actual model identifier to pass to OmniVoice.from_pretrained
-    # 1. If it's a known HF model (by display name), use the repo_id
+    # 1. If it's a known HF model (by display name), download to our folder then use local path
     # 2. If it's a local path, use the path
     # 3. Otherwise pass as-is (might be an unknown HF repo)
     model_identifier = model_name
 
     if model_name in HF_MODELS:
-        # Known HF model - use the repo_id for HuggingFace
-        model_identifier = HF_MODELS[model_name]["repo_id"]
-        # Check if downloaded locally first
+        # Known HF model - auto-download to our models folder first
+        if not _is_model_downloaded(model_name):
+            logger.info(f"Model '{model_name}' not found locally. Auto-downloading...")
+            success = _auto_download_model(model_name)
+            if not success:
+                raise RuntimeError(f"Failed to download model '{model_name}'")
+
+        # Use local path
         local_path = _get_models_base() / model_name
-        if local_path.is_dir() and any(local_path.iterdir()):
-            model_identifier = str(local_path)
-            logger.info(f"Using local model at: {local_path}")
-        else:
-            logger.info(f"Will download from HuggingFace: {model_identifier}")
+        model_identifier = str(local_path)
+        logger.info(f"Using local model at: {local_path}")
     else:
         # Check if it's a local folder name
         local_path = _get_models_base() / model_name
