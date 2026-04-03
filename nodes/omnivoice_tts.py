@@ -512,6 +512,8 @@ class OmniVoiceLongformTTS:
 
         audio_chunks = []
         result = None
+        auto_ref_audio_tensor = None
+        first_chunk_text = ""
 
         try:
             for chunk_idx, chunk_text in enumerate(chunks):
@@ -534,7 +536,12 @@ class OmniVoiceLongformTTS:
                     "postprocess_output": postprocess_output,
                 }
 
-                if use_voice_clone:
+                # Auto-voice consistency: use first chunk's output as
+                # reference for all subsequent chunks to keep the same voice.
+                if not use_voice_clone and chunk_idx > 0 and auto_ref_audio_tensor is not None:
+                    gen_kwargs["ref_audio"] = (auto_ref_audio_tensor, OMNIVOICE_SAMPLE_RATE)
+                    gen_kwargs["ref_text"] = first_chunk_text
+                elif use_voice_clone:
                     gen_kwargs["ref_audio"] = (ref_audio_tensor, OMNIVOICE_SAMPLE_RATE)
                     if ref_text.strip():
                         gen_kwargs["ref_text"] = ref_text.strip()
@@ -548,6 +555,19 @@ class OmniVoiceLongformTTS:
                 audio_tensor = audio_list[0]
                 audio_np = audio_tensor.squeeze(0).cpu().numpy()
                 audio_chunks.append(audio_np)
+
+                # Capture first chunk audio as reference for auto-voice consistency
+                if not use_voice_clone and chunk_idx == 0 and len(chunks) > 1:
+                    max_ref_samples = 25 * OMNIVOICE_SAMPLE_RATE
+                    if len(audio_np) > max_ref_samples:
+                        auto_ref_audio_np = audio_np[:max_ref_samples]
+                        logger.info("  Cropped auto-reference audio to 25s for voice consistency")
+                    else:
+                        auto_ref_audio_np = audio_np
+                    auto_ref_audio_tensor = torch.from_numpy(auto_ref_audio_np).float()
+                    first_chunk_text = chunk_text
+                    ref_dur = len(auto_ref_audio_np) / OMNIVOICE_SAMPLE_RATE
+                    logger.info(f"  Using first chunk ({ref_dur:.1f}s) as voice reference for remaining chunks")
 
                 if pbar:
                     pbar.update_absolute(chunk_idx + 2, total_chunks + 1)

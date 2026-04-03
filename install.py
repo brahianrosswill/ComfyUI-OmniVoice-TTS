@@ -139,6 +139,7 @@ def main():
     extra_packages = [
         # (import_name, pip_name, description)
         ("soundfile", "soundfile", "Audio file I/O"),
+        ("scipy", "scipy", "Scientific computing (required by librosa resampling)"),
         ("librosa", "librosa", "Audio processing"),
         ("sentencepiece", "sentencepiece", "Tokenization"),
         ("jieba", "jieba", "Chinese text segmentation"),
@@ -146,9 +147,7 @@ def main():
 
     # Packages safe to install with --no-deps (no transitive deps that
     # aren't already in a standard ComfyUI environment).
-    # All packages use --no-deps to avoid pulling in transitive deps
-    # (e.g. numpy, scipy) that could conflict with ComfyUI's versions.
-    no_deps_packages = {"soundfile", "sentencepiece", "jieba", "librosa"}
+    no_deps_packages = {"soundfile", "sentencepiece", "jieba", "scipy", "librosa"}
 
     for import_name, pip_name, description in extra_packages:
         if is_installed(import_name):
