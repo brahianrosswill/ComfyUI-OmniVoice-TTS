@@ -72,7 +72,7 @@ def _auto_download_model(model_name: str = HF_DEFAULT_MODEL) -> bool:
     repo_id = cfg["repo_id"]
     dest = _get_models_base() / model_name.replace("/", "_")
 
-    if dest.is_dir() and any(dest.iterdir()):
+    if _is_model_downloaded(model_name):
         return True
 
     logger.info(f"Downloading '{model_name}' ({cfg['description']}) from HuggingFace...")

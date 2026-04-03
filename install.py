@@ -146,7 +146,9 @@ def main():
 
     # Packages safe to install with --no-deps (no transitive deps that
     # aren't already in a standard ComfyUI environment).
-    no_deps_packages = {"soundfile", "sentencepiece", "jieba"}
+    # All packages use --no-deps to avoid pulling in transitive deps
+    # (e.g. numpy, scipy) that could conflict with ComfyUI's versions.
+    no_deps_packages = {"soundfile", "sentencepiece", "jieba", "librosa"}
 
     for import_name, pip_name, description in extra_packages:
         if is_installed(import_name):
