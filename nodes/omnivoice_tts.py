@@ -18,6 +18,7 @@ from .loader import (
     comfy_audio_to_numpy,
     resolve_device,
 )
+from .whisper_loader import find_local_whisper_model, load_whisper_pipeline
 from .model_cache import (
     cancel_event,
     get_cache_key,
@@ -486,7 +487,25 @@ class OmniVoiceLongformTTS:
                     logger.info("Using pre-loaded Whisper ASR for voice transcription")
                     omnivoice_model._asr_pipe = whisper_pipe
             elif not ref_text.strip():
-                logger.info("No ref_text — Whisper will auto-transcribe (downloads if not cached)")
+                # Check for locally downloaded Whisper before letting OmniVoice download
+                local_name = find_local_whisper_model()
+                if local_name is not None:
+                    logger.info(
+                        f"No ref_text — auto-detected local Whisper "
+                        f"({local_name}) for transcription"
+                    )
+                    try:
+                        pipe = load_whisper_pipeline(local_name, device, dtype)
+                        get_or_cache_whisper(
+                            {"pipeline": pipe, "model_name": local_name},
+                            model, device, dtype,
+                        )
+                        omnivoice_model._asr_pipe = pipe
+                    except Exception as e:
+                        logger.warning(f"Failed to load local Whisper: {e}")
+                        logger.info("No ref_text — Whisper will auto-transcribe (downloads if not cached)")
+                else:
+                    logger.info("No ref_text — Whisper will auto-transcribe (downloads if not cached)")
 
         chunks = _smart_chunk_text(text, words_per_chunk)
 

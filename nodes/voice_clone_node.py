@@ -30,6 +30,7 @@ from .model_cache import (
     unload_model,
     unload_whisper,
 )
+from .whisper_loader import find_local_whisper_model, load_whisper_pipeline
 
 try:
     from comfy.utils import ProgressBar
@@ -346,7 +347,26 @@ class OmniVoiceVoiceCloneTTS:
                 logger.info("No reference transcript — using pre-loaded Whisper ASR")
                 omnivoice_model._asr_pipe = whisper_pipe
         else:
-            logger.info("No reference transcript — Whisper will auto-transcribe (will download if not cached)")
+            # No Whisper node connected — check for a locally downloaded model
+            # before letting OmniVoice trigger its own download
+            local_name = find_local_whisper_model()
+            if local_name is not None:
+                logger.info(
+                    f"No reference transcript — auto-detected local Whisper "
+                    f"({local_name}) for transcription"
+                )
+                try:
+                    pipe = load_whisper_pipeline(local_name, device, dtype)
+                    get_or_cache_whisper(
+                        {"pipeline": pipe, "model_name": local_name},
+                        model, device, dtype,
+                    )
+                    omnivoice_model._asr_pipe = pipe
+                except Exception as e:
+                    logger.warning(f"Failed to load local Whisper: {e}")
+                    logger.info("No reference transcript — Whisper will auto-transcribe (will download if not cached)")
+            else:
+                logger.info("No reference transcript — Whisper will auto-transcribe (will download if not cached)")
 
         # Set random seed
         actual_seed = seed if seed != 0 else torch.randint(0, 2**31, (1,)).item()

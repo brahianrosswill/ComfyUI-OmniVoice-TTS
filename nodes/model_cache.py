@@ -119,7 +119,12 @@ def offload_model_to_cpu() -> None:
 
 
 def resume_model_to_cuda(device: str = "cuda") -> None:
-    """Resume an offloaded model back to GPU."""
+    """Resume an offloaded model back to GPU.
+
+    Also restores the device of any internal ASR pipeline (``_asr_pipe``)
+    attached to the model so that input tensors and weights stay on the
+    same device.
+    """
     global _offloaded
     with _cache_lock:
         if _cached_model is None:
@@ -129,6 +134,10 @@ def resume_model_to_cuda(device: str = "cuda") -> None:
         try:
             _cached_model.to(device)
             _offloaded = False
+            # Restore internal ASR pipeline to the same device
+            asr = getattr(_cached_model, "_asr_pipe", None)
+            if asr is not None:
+                _whisper_to_device(asr, device)
             logger.info(f"Model resumed to {device}.")
         except Exception as e:
             logger.warning(f"Failed to resume model: {e}")

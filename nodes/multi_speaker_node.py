@@ -34,6 +34,7 @@ from .model_cache import (
     unload_model,
     unload_whisper,
 )
+from .whisper_loader import find_local_whisper_model, load_whisper_pipeline
 
 try:
     from comfy.utils import ProgressBar
@@ -126,6 +127,33 @@ def _speaker_inputs(count: int) -> list:
             )
         )
     return inputs
+
+
+def _auto_load_whisper(omnivoice_model, model_name: str, device: str, dtype: str) -> None:
+    """Load a locally available Whisper model if the model doesn't already
+    have an ASR pipeline set.  Avoids OmniVoice triggering its own download.
+    """
+    if getattr(omnivoice_model, "_asr_pipe", None) is not None:
+        return  # Already has a pipeline
+
+    local_name = find_local_whisper_model()
+    if local_name is None:
+        return
+
+    logger.info(
+        f"Auto-detected local Whisper model ({local_name}) — "
+        "loading for auto-transcription"
+    )
+    try:
+        pipe = load_whisper_pipeline(local_name, device, dtype)
+        # Cache it so offload/resume lifecycle is handled properly
+        get_or_cache_whisper(
+            {"pipeline": pipe, "model_name": local_name},
+            model_name, device, dtype,
+        )
+        omnivoice_model._asr_pipe = pipe
+    except Exception as e:
+        logger.warning(f"Failed to auto-load local Whisper: {e}")
 
 
 # ---------------------------------------------------------------------------
@@ -341,6 +369,14 @@ if _V3:
             logger.info(
                 f"Multi-Speaker TTS ({n} speakers, {len(dialogue_lines)} lines)"
             )
+
+            # Auto-detect local Whisper if any speaker needs transcription
+            any_without_ref = any(
+                not num_speakers.get(f"speaker_{i + 1}_ref_text", "").strip()
+                for i in range(n)
+            )
+            if any_without_ref:
+                _auto_load_whisper(omnivoice_model, model, device, dtype)
 
             # Set random seed
             actual_seed = seed if seed != 0 else torch.randint(0, 2**31, (1,)).item()
@@ -651,6 +687,15 @@ else:
             logger.info(
                 f"Multi-Speaker TTS ({num_speakers} speakers, {len(dialogue_lines)} lines)"
             )
+
+            # Auto-detect local Whisper if no Whisper node is connected
+            # and any speaker needs auto-transcription
+            any_without_ref = any(
+                not kwargs.get(f"speaker_{i}_ref_text", "").strip()
+                for i in range(1, num_speakers + 1)
+            )
+            if any_without_ref and whisper_model is None:
+                _auto_load_whisper(omnivoice_model, model, device, dtype)
 
             # Set random seed
             actual_seed = seed if seed != 0 else torch.randint(0, 2**31, (1,)).item()

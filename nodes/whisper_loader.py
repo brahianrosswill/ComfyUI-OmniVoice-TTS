@@ -10,12 +10,24 @@ ASR uses ComfyUI's cache folder instead of downloading repeatedly.
 
 import logging
 import os
+import warnings
 from pathlib import Path
 from typing import Optional, Any
 
 import torch
 
 logger = logging.getLogger("OmniVoice")
+
+# Suppress the duplicate logits-processor warning that some transformers
+# versions emit during Whisper generation.  The warning is harmless —
+# transformers is just informing the user that its internally-created
+# SuppressTokensLogitsProcessor takes precedence over one that the
+# pipeline also passes.  Only visible on newer transformers releases.
+warnings.filterwarnings(
+    "ignore",
+    message=r"A custom logits processor of type .* has been passed to `.generate\(\)`",
+    category=UserWarning,
+)
 
 
 def _get_audio_encoders_dir() -> Path:
@@ -214,6 +226,42 @@ def load_whisper_pipeline(model_name: str, device: str = "auto", dtype: str = "a
 
     logger.info(f"Whisper ASR model loaded on {device_str} ({asr_dtype}).")
     return pipe
+
+
+def find_local_whisper_model() -> Optional[str]:
+    """Find the best locally available Whisper model folder name.
+
+    Returns the safe folder name (e.g. ``"openai_whisper-large-v3-turbo"``)
+    suitable for passing to :func:`load_whisper_pipeline`, or ``None`` if no
+    model is present.
+    """
+    # Check default model first
+    if _is_whisper_downloaded(DEFAULT_WHISPER_MODEL):
+        return DEFAULT_WHISPER_MODEL.replace("/", "_")
+
+    # Check popular models
+    for _display, repo_id in POPULAR_WHISPER_MODELS.items():
+        if _is_whisper_downloaded(repo_id):
+            return repo_id.replace("/", "_")
+
+    # Check for any user-added model folder
+    base = _get_audio_encoders_dir()
+    known = {rid.replace("/", "_") for rid in POPULAR_WHISPER_MODELS.values()}
+    try:
+        for entry in sorted(base.iterdir()):
+            if entry.is_dir() and entry.name not in known:
+                has_config = (entry / "config.json").is_file()
+                has_model = any(
+                    f.suffix in {".safetensors", ".bin", ".pt", ".pth"}
+                    for f in entry.iterdir()
+                    if f.is_file()
+                )
+                if has_config or has_model:
+                    return entry.name
+    except OSError:
+        pass
+
+    return None
 
 
 class OmniVoiceWhisperLoader:
