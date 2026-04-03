@@ -214,7 +214,7 @@ def load_whisper_pipeline(model_name: str, device: str = "auto", dtype: str = "a
     pipe = hf_pipeline(
         "automatic-speech-recognition",
         model=str(model_path),
-        dtype=asr_dtype,
+        torch_dtype=asr_dtype,
         device_map=device_str,
     )
 

@@ -50,15 +50,94 @@ logger = logging.getLogger("OmniVoice")
 OMNIVOICE_SAMPLE_RATE = 24000
 
 
+def _is_cjk(char: str) -> bool:
+    """Check if a character belongs to a script that doesn't use spaces between words."""
+    cp = ord(char)
+    return (
+        0x4E00 <= cp <= 0x9FFF       # CJK Unified Ideographs
+        or 0x3400 <= cp <= 0x4DBF     # CJK Extension A
+        or 0x20000 <= cp <= 0x2A6DF   # CJK Extension B
+        or 0xF900 <= cp <= 0xFAFF     # CJK Compat Ideographs
+        or 0x3040 <= cp <= 0x309F     # Hiragana
+        or 0x30A0 <= cp <= 0x30FF     # Katakana
+        or 0xAC00 <= cp <= 0xD7AF     # Hangul Syllables
+        or 0x0E00 <= cp <= 0x0E7F     # Thai
+        or 0x0E80 <= cp <= 0x0EFF     # Lao
+        or 0x1000 <= cp <= 0x109F     # Myanmar
+        or 0x1780 <= cp <= 0x17FF     # Khmer
+    )
+
+
+def _chunk_by_characters(text: str, chars_per_chunk: int, sentence_end) -> list:
+    """Chunk non-space-separated text by character count at sentence boundaries.
+
+    Uses string slicing to preserve original spacing without corruption.
+    """
+    if len(text) <= chars_per_chunk:
+        return [text]
+
+    chunks = []
+    pos = 0
+    text_len = len(text)
+
+    while pos < text_len:
+        while pos < text_len and text[pos].isspace():
+            pos += 1
+        if pos >= text_len:
+            break
+
+        target_end = min(pos + chars_per_chunk, text_len)
+
+        if target_end >= text_len:
+            remaining = text[pos:].strip()
+            if remaining:
+                chunks.append(remaining)
+            break
+
+        segment = text[pos:target_end]
+        matches = list(sentence_end.finditer(segment))
+
+        if matches:
+            last_match = matches[-1]
+            split_at = pos + last_match.end()
+            chunk = text[pos:split_at].strip()
+            if chunk:
+                chunks.append(chunk)
+            pos = split_at
+        else:
+            chunk = text[pos:target_end].strip()
+            if chunk:
+                chunks.append(chunk)
+            pos = target_end
+
+    return chunks if chunks else [text]
+
+
 def _smart_chunk_text(text: str, words_per_chunk: int = 100) -> list:
     """Split text into chunks at sentence boundaries, not cutting words.
 
-    Tries to split at sentence-ending punctuation (.!?) followed by space/newline.
-    Falls back to word boundaries if no sentence breaks found.
+    Works for space-separated languages (English, Arabic, Hindi, etc.) and
+    non-space-separated languages (Chinese, Japanese, Korean, Thai, etc.).
+    Sentence boundary detection supports Latin (.!?), CJK (。？！),
+    Devanagari (।॥), Arabic (؟), Myanmar (။), and Tibetan (།).
     """
     if words_per_chunk <= 0:
         return [text]
 
+    # Latin punctuation requires trailing space/end to avoid matching abbreviations.
+    # Non-Latin punctuation is only used at true sentence boundaries, so no space needed.
+    sentence_end = re.compile(
+        r'(?:[.!?]+(?:\s|$)|[。？！\u0964\u0965\u061F\u104B\u0F0D]+)'
+    )
+
+    cjk_count = sum(1 for ch in text if _is_cjk(ch))
+    alpha_count = sum(1 for ch in text if ch.isalpha() or _is_cjk(ch))
+    is_cjk_dominant = alpha_count > 0 and cjk_count / alpha_count > 0.3
+
+    if is_cjk_dominant:
+        return _chunk_by_characters(text, words_per_chunk, sentence_end)
+
+    # Space-separated language path
     words = text.split()
     if len(words) <= words_per_chunk:
         return [text]
@@ -66,8 +145,6 @@ def _smart_chunk_text(text: str, words_per_chunk: int = 100) -> list:
     chunks = []
     current_chunk = []
     current_word_count = 0
-
-    sentence_end = re.compile(r'[.!?]+(?:\s|$)')
 
     for word in words:
         current_chunk.append(word)

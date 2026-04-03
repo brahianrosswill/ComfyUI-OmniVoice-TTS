@@ -17,6 +17,7 @@ from .loader import (
     comfy_audio_to_numpy,
     resolve_device,
 )
+from .omnivoice_tts import _smart_chunk_text
 from .model_cache import (
     cancel_event,
     get_cache_key,
@@ -183,6 +184,19 @@ class OmniVoiceVoiceCloneTTS:
                         ),
                     },
                 ),
+                "words_per_chunk": (
+                    "INT",
+                    {
+                        "default": 100,
+                        "min": 0,
+                        "max": 500,
+                        "step": 10,
+                        "tooltip": (
+                            "Words per chunk for long text. 0 = no chunking. "
+                            "Chunks split at sentence boundaries, not mid-word."
+                        ),
+                    },
+                ),
             },
             "optional": {
                 "whisper_model": (
@@ -220,6 +234,7 @@ class OmniVoiceVoiceCloneTTS:
         dtype: str,
         attention: str,
         seed: int,
+        words_per_chunk: int,
         keep_model_loaded: bool,
         whisper_model: dict = None,
     ) -> Tuple[dict]:
@@ -239,6 +254,7 @@ class OmniVoiceVoiceCloneTTS:
         # Convert reference audio from ComfyUI format to numpy at 24kHz
         logger.info("Processing reference audio...")
         ref_audio_np, ref_sr = comfy_audio_to_numpy(ref_audio, target_sr=OMNIVOICE_SAMPLE_RATE)
+        ref_audio_tensor = torch.from_numpy(ref_audio_np).float()
         ref_duration = len(ref_audio_np) / OMNIVOICE_SAMPLE_RATE
 
         # Warn about reference audio length
@@ -279,42 +295,54 @@ class OmniVoiceVoiceCloneTTS:
 
         self._check_interrupt()
 
+        # Smart chunk long text at sentence boundaries
+        chunks = _smart_chunk_text(text, words_per_chunk)
+        if len(chunks) > 1:
+            logger.info(f"Long text detected — splitting into {len(chunks)} chunks at sentence boundaries")
+
+        total_chunks = len(chunks)
+        pbar = ProgressBar(total_chunks + 1) if _PBAR else None
+        audio_chunks = []
+
         try:
-            # Build kwargs for generate
-            # OmniVoice expects ref_audio as (waveform_tensor, sample_rate) tuple
-            # waveform_tensor must be a torch tensor, not numpy array
-            ref_audio_tensor = torch.from_numpy(ref_audio_np).float()
-            gen_kwargs = {
-                "text": text,
-                "num_step": steps,
-                "speed": speed,
-                "ref_audio": (ref_audio_tensor, OMNIVOICE_SAMPLE_RATE),
-            }
-            if ref_text.strip():
-                gen_kwargs["ref_text"] = ref_text.strip()
-            if duration > 0:
-                gen_kwargs["duration"] = duration
+            for chunk_idx, chunk_text in enumerate(chunks):
+                self._check_interrupt()
 
-            # Generate audio with voice cloning
-            with torch.no_grad():
-                audio_list = omnivoice_model.generate(**gen_kwargs)
+                if len(chunks) > 1:
+                    logger.info(f"  Chunk {chunk_idx + 1}/{len(chunks)}: {chunk_text[:50]}{'...' if len(chunk_text) > 50 else ''}")
 
-            if pbar:
-                pbar.update_absolute(3, 4)
+                gen_kwargs = {
+                    "text": chunk_text,
+                    "num_step": steps,
+                    "speed": speed,
+                    "ref_audio": (ref_audio_tensor, OMNIVOICE_SAMPLE_RATE),
+                }
+                if ref_text.strip():
+                    gen_kwargs["ref_text"] = ref_text.strip()
+                if duration > 0:
+                    gen_kwargs["duration"] = duration
 
-            # Convert to ComfyUI format
-            audio_tensor = audio_list[0]  # (1, T)
-            audio_np = audio_tensor.squeeze(0).cpu().numpy()
+                with torch.no_grad():
+                    audio_list = omnivoice_model.generate(**gen_kwargs)
 
-            result = numpy_audio_to_comfy(audio_np, OMNIVOICE_SAMPLE_RATE)
+                audio_np = audio_list[0].squeeze(0).cpu().numpy()
+                audio_chunks.append(audio_np)
+
+                if pbar:
+                    pbar.update_absolute(chunk_idx + 2, total_chunks + 1)
+
+            # Concatenate all chunks
+            if len(audio_chunks) == 1:
+                audio_out = audio_chunks[0]
+            else:
+                audio_out = np.concatenate(audio_chunks, axis=0)
+
+            result = numpy_audio_to_comfy(audio_out, OMNIVOICE_SAMPLE_RATE)
 
             logger.info(
-                f"Generated {len(audio_np) / OMNIVOICE_SAMPLE_RATE:.2f}s of audio "
+                f"Generated {len(audio_out) / OMNIVOICE_SAMPLE_RATE:.2f}s of audio "
                 f"at {OMNIVOICE_SAMPLE_RATE}Hz in cloned voice"
             )
-
-            if pbar:
-                pbar.update_absolute(4, 4)
 
         finally:
             if not keep_model_loaded:
