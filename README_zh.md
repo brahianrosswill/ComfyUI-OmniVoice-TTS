@@ -52,6 +52,8 @@ python install.py
 | text | STRING, 多行 | `"你好..."` | 要合成的文本 |
 | ref_text | STRING, 多行 | "" | 参考音频转录文本（空=自动识别） |
 | steps | INT | 32 | 扩散步数（4-64，16=快，64=最佳） |
+| guidance_scale | FLOAT | 2.0 | 分类器自由引导比例（0-10） |
+| t_shift | FLOAT | 0.1 | 噪声调度时间步偏移（0-1） |
 | speed | FLOAT | 1.0 | 语速（0.5-2.0，>1=加快） |
 | duration | FLOAT | 0.0 | 固定时长秒数（0=自动） |
 | device | COMBO | auto | `auto`、`cuda`、`cpu`、`mps` |
@@ -59,7 +61,13 @@ python install.py
 | attention | COMBO | auto | `auto`、`eager`、`sage_attention` |
 | seed | INT | 0 | 随机种子（0=随机） |
 | words_per_chunk | INT | 100 | 每块词数（0=不分块） |
-| keep_model_loaded | BOOLEAN | True | 保持模型加载 |
+| position_temperature | FLOAT | 5.0 | 掩码位置选择温度（0=贪心，越高越随机） |
+| class_temperature | FLOAT | 0.0 | token采样温度（0=贪心） |
+| layer_penalty_factor | FLOAT | 5.0 | 深层码本惩罚因子 |
+| denoise | BOOLEAN | True | 在输入前添加去噪token以获得更干净输出 |
+| preprocess_prompt | BOOLEAN | True | 预处理参考音频（去除静音，添加标点） |
+| postprocess_output | BOOLEAN | True | 后处理生成音频（去除长静音） |
+| keep_model_loaded | BOOLEAN | True | 保持模型加载（运行间自动卸载到CPU） |
 
 **可选输入：**
 - `ref_audio` — 声音克隆参考音频（3-15秒最佳）
@@ -75,12 +83,20 @@ python install.py
 | ref_audio | AUDIO | 必填 | 参考音频（3-15秒） |
 | ref_text | STRING, 多行 | "" | 转录文本（空=Whisper自动识别） |
 | steps | INT | 32 | 扩散步数（4-64） |
+| guidance_scale | FLOAT | 2.0 | 分类器自由引导比例（0-10） |
+| t_shift | FLOAT | 0.1 | 噪声调度时间步偏移（0-1） |
 | speed | FLOAT | 1.0 | 语速（0.5-2.0） |
 | duration | FLOAT | 0.0 | 固定时长秒数（0=自动） |
 | device | COMBO | auto | `auto`、`cuda`、`cpu`、`mps` |
 | dtype | COMBO | auto | `auto`、`bf16`、`fp16`、`fp32` |
 | attention | COMBO | auto | `auto`、`eager`、`sage_attention` |
 | seed | INT | 0 | 随机种子（0=随机） |
+| position_temperature | FLOAT | 5.0 | 掩码位置选择温度（0=贪心） |
+| class_temperature | FLOAT | 0.0 | token采样温度（0=贪心） |
+| layer_penalty_factor | FLOAT | 5.0 | 深层码本惩罚因子 |
+| denoise | BOOLEAN | True | 在输入前添加去噪token |
+| preprocess_prompt | BOOLEAN | True | 预处理参考音频 |
+| postprocess_output | BOOLEAN | True | 后处理生成音频 |
 | keep_model_loaded | BOOLEAN | True | 保持模型加载 |
 
 **可选输入：**
@@ -95,12 +111,19 @@ python install.py
 | text | STRING, 多行 | `"你好..."` | 要用设计声音合成的文本 |
 | voice_instruct | STRING, 多行 | `"female, low pitch..."` | 声音属性描述 |
 | steps | INT | 32 | 扩散步数（4-64） |
+| guidance_scale | FLOAT | 2.0 | 分类器自由引导比例（0-10） |
+| t_shift | FLOAT | 0.1 | 噪声调度时间步偏移（0-1） |
 | speed | FLOAT | 1.0 | 语速（0.5-2.0） |
 | duration | FLOAT | 0.0 | 固定时长秒数（0=自动） |
 | device | COMBO | auto | `auto`、`cuda`、`cpu`、`mps` |
 | dtype | COMBO | auto | `auto`、`bf16`、`fp16`、`fp32` |
 | attention | COMBO | auto | `auto`、`eager`、`sage_attention` |
 | seed | INT | 0 | 随机种子（0=随机） |
+| position_temperature | FLOAT | 5.0 | 掩码位置选择温度（0=贪心） |
+| class_temperature | FLOAT | 0.0 | token采样温度（0=贪心） |
+| layer_penalty_factor | FLOAT | 5.0 | 深层码本惩罚因子 |
+| denoise | BOOLEAN | True | 在输入前添加去噪token |
+| postprocess_output | BOOLEAN | True | 后处理生成音频 |
 | keep_model_loaded | BOOLEAN | True | 保持模型加载 |
 
 ### 4. OmniVoice Multi-Speaker TTS
@@ -110,13 +133,21 @@ python install.py
 |------|------|--------|------|
 | model | COMBO | (自动) | OmniVoice模型检查点 |
 | text | STRING, 多行 | `"[Speaker_1]: 你好..."` | 多说话人文本 |
-| num_speakers | INT | 2 | 说话人数量（2-10） |
+| num_speakers | 动态 | 2 | 说话人数量（2-10，动态输入） |
 | steps | INT | 32 | 每个说话人的扩散步数 |
+| guidance_scale | FLOAT | 2.0 | 分类器自由引导比例（0-10） |
+| t_shift | FLOAT | 0.1 | 噪声调度时间步偏移（0-1） |
 | speed | FLOAT | 1.0 | 所有说话人的语速 |
 | pause_between_speakers | FLOAT | 0.3 | 说话人间静音秒数 |
 | device | COMBO | auto | `auto`、`cuda`、`cpu`、`mps` |
 | dtype | COMBO | auto | `auto`、`bf16`、`fp16`、`fp32` |
 | attention | COMBO | auto | `auto`、`eager`、`sage_attention` |
+| position_temperature | FLOAT | 5.0 | 掩码位置选择温度（0=贪心） |
+| class_temperature | FLOAT | 0.0 | token采样温度（0=贪心） |
+| layer_penalty_factor | FLOAT | 5.0 | 深层码本惩罚因子 |
+| denoise | BOOLEAN | True | 在输入前添加去噪token |
+| preprocess_prompt | BOOLEAN | True | 预处理参考音频 |
+| postprocess_output | BOOLEAN | True | 后处理生成音频 |
 | seed | INT | 0 | 随机种子（0=随机） |
 | keep_model_loaded | BOOLEAN | True | 保持模型加载 |
 | speaker_N_audio | AUDIO | 可选 | 说话人N的参考音频（1-10） |
@@ -134,6 +165,24 @@ python install.py
 | dtype | COMBO | auto | `auto`、`bf16`、`fp16`、`fp32` |
 
 **自动下载：** 选择带"(auto-download)"后缀的模型可在首次使用时自动下载。
+
+## 生成参数指南
+
+这些参数控制基于扩散的音频生成过程：
+
+| 参数 | 作用 | 建议 |
+|------|------|------|
+| `steps` | 迭代去遮蔽步数 | 16=更快，32=平衡，64=最佳质量 |
+| `guidance_scale` | 分类器自由引导强度 | 越高越对齐文本；默认2.0 |
+| `t_shift` | 噪声调度时间步偏移 | 较小值强调早期解码步骤 |
+| `speed` | 语速因子 | >1.0=加快，<1.0=减慢 |
+| `duration` | 固定输出长度（秒） | 设定时覆盖speed；0=自动 |
+| `position_temperature` | 掩码位置选择随机性 | 0=贪心（确定），越高越随机 |
+| `class_temperature` | token采样随机性 | 0=贪心（确定），越高越随机 |
+| `layer_penalty_factor` | 深层码本惩罚 | 鼓励低层先解码 |
+| `denoise` | 在输入前添加去噪token | 通常可改善输出质量 |
+| `preprocess_prompt` | 清理参考音频 | 去除长静音，添加标点 |
+| `postprocess_output` | 清理生成音频 | 去除输出中的长静音 |
 
 ## 注意力后端
 
@@ -157,13 +206,11 @@ OmniVoice的架构（Qwen3骨干）通过transformers支持的注意力后端有
 ## 多说话人用法
 
 使用 `[Speaker_N]:` 标签分配台词：
-
 ```
 [Speaker_1]: 你好，我是说话人一。
 [Speaker_2]: 我是说话人二！
 [Speaker_1]: 很高兴认识你！
 ```
-
 每个说话人需要连接对应的 `speaker_N_audio` 参考音频输入。
 
 ## 声音设计属性
@@ -265,6 +312,9 @@ export HF_ENDPOINT="https://hf-mirror.com"
 
 ### 安装后出现导入错误
 完全重启ComfyUI以重新加载Python模块。
+
+### Windows保存音频时FFmpeg错误
+在ComfyUI启动 `.bat` 文件中将FFmpeg的 `bin/` 文件夹添加到 `PATH`，或使用WAV音频保存节点。
 
 ## 致谢
 
